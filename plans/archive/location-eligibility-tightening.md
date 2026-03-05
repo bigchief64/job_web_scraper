@@ -3,7 +3,7 @@
 Metadata:
 - plan_name: location-eligibility-tightening
 - branch_name: location-eligibility-tightening
-- status: building
+- status: completed
 - owner: codex
 - validation_defaults:
   - python -c "import py_compile, pathlib; [py_compile.compile(str(p), doraise=True) for p in pathlib.Path('job_hunter').glob('*.py')]; py_compile.compile('main.py', doraise=True)"
@@ -38,7 +38,7 @@ Exit Criteria:
 - Unknown-remote jobs outside New Orleans region fail.
 
 ## Phase 3: Add Deterministic Policy Tests
-Status: in_progress
+Status: completed
 Goal: Prevent regressions in location eligibility rules.
 Scope: Add lightweight test module (or deterministic script checks) covering: confirmed remote pass, New Orleans local/hybrid pass, unknown remote outside region fail, known onsite outside region fail.
 Validation:
@@ -51,7 +51,7 @@ Exit Criteria:
 - Test coverage includes both allowed and rejected location classes.
 
 ## Phase 4: CLI Behavior Verification And Documentation
-Status: pending
+Status: completed
 Goal: Ensure runtime output aligns with new eligibility policy and operational expectations.
 Scope: Verify dry-run results reflect stricter policy; update README notes to state only confirmed remote or New Orleans-region local/hybrid roles are returned.
 Validation:
@@ -63,7 +63,7 @@ Exit Criteria:
 - Dry-run outputs contain only confirmed remote or New Orleans-region local/hybrid eligible roles.
 
 ## Risk And Dependency Notes
-Status: pending
+Status: completed
 Goal: Make sequencing and regression risks explicit.
 Scope: Ensure filter policy update occurs before tests/docs; capture risk that stricter eligibility may return fewer than 10 results.
 Validation:

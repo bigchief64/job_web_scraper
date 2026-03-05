@@ -9,8 +9,9 @@ Local Python CLI for daily backend job discovery from YC Work at a Startup and W
   - Wellfound (`https://wellfound.com/jobs`)
 - Normalizes jobs into a shared dataclass model.
 - Filters aggressively for backend-relevant roles using title + description.
+- Enforces location eligibility: confirmed remote roles, or New Orleans-region local/hybrid roles only.
 - Scores jobs with weighted keyword matching and drops negative-score results.
-- Prioritizes remote roles and keeps jobs with unknown remote status marked in output.
+- Prioritizes remote roles within the eligible set.
 - Persists previously returned URLs in SQLite to avoid duplicates across runs.
 
 ## Install
@@ -47,4 +48,5 @@ URL: https://...
 
 - Wellfound may block plain HTTP scraping; Playwright is the primary path.
 - If a source parser fails, the CLI continues with remaining sources and emits warnings.
+- Roles with unknown remote status are rejected unless they explicitly match New Orleans-region location aliases.
 - Future boards (for example LinkedIn) can be added as new scraper modules and wired in `job_hunter/pipeline.py`.
