@@ -1,0 +1,251 @@
+You are building a local Python job discovery tool for backend engineering roles.
+
+The goal is to scrape relevant job listings, filter them aggressively for backend roles that match my stack, and return 10 fresh links I have not seen before.
+
+The tool should prioritize accuracy and robustness over simplicity.
+
+Requirements
+
+Build a local Python CLI tool that:
+
+Scrapes job listings from:
+
+YC WorkAtAStartup
+https://www.workatastartup.com/jobs
+
+Wellfound
+https://wellfound.com/jobs
+
+If possible, optionally support LinkedIn later, but do NOT implement LinkedIn scraping now.
+
+Extracts structured job data:
+
+Each job should include:
+
+title
+
+company
+
+location
+
+remote flag (if detectable)
+
+description text
+
+job URL
+
+source (yc / wellfound)
+
+Filters jobs based on my target engineering profile:
+
+Relevant roles must contain keywords indicating:
+
+Backend engineering with technologies like:
+
+Node
+TypeScript
+Go
+Python
+APIs
+microservices
+distributed systems
+AWS
+SQS
+queues
+event-driven
+backend platform
+
+Reject roles that include:
+
+React
+frontend
+UI
+designer
+mobile
+product manager
+full stack (unless backend-heavy)
+iOS
+Android
+
+The filtering logic should:
+
+be case insensitive
+
+operate on title + description text
+
+Prioritize remote jobs
+
+Jobs should be included only if:
+
+remote
+
+remote-friendly
+
+remote US
+
+If remote cannot be detected reliably, include the job but mark it.
+
+Avoid duplicates
+
+The system must track jobs that have already been returned to the user.
+
+Use SQLite with a simple schema:
+
+jobs_seen(
+url TEXT PRIMARY KEY,
+first_seen TIMESTAMP
+)
+
+Only return jobs that are not already in this table.
+
+Return 10 fresh job links per run
+
+Output format in terminal:
+
+Score: 8.7
+Title: Backend Engineer
+Company: ExampleCo
+Location: Remote
+Source: YC
+URL: https://...
+
+Implement basic relevance scoring
+
+Score jobs based on keyword matches:
+
++5 Node
++5 TypeScript
++5 Go
++4 APIs
++4 distributed
++3 AWS
++3 microservices
++3 event-driven
+
+Negative scoring:
+
+-10 React
+-8 frontend
+-8 UI
+
+Jobs with negative scores should be discarded.
+
+Sort results by score.
+
+Scraping Approach
+
+Use the most reliable scraping method.
+
+Preferred approach:
+
+Playwright (headless browser) to load dynamic pages.
+
+If Playwright is used:
+
+run headless
+
+wait for page content
+
+extract job cards
+
+Fallback:
+
+requests + BeautifulSoup
+
+The scraper should be designed so that each job board has its own scraper module.
+
+Example structure:
+
+job_hunter/
+main.py
+storage.py
+filters.py
+scoring.py
+models.py
+yc_scraper.py
+wellfound_scraper.py
+
+Storage
+
+Use SQLite.
+
+Provide functions:
+
+init_db()
+
+job_seen(url)
+
+mark_job_seen(url)
+
+CLI Behavior
+
+Running:
+
+python main.py
+
+should:
+
+scrape both job sources
+
+normalize results into a common Job object
+
+filter jobs
+
+score jobs
+
+remove previously seen jobs
+
+return the top 10
+
+mark them as seen
+
+Code Quality Requirements
+
+The code must:
+
+be modular
+
+use dataclasses for Job objects
+
+include comments
+
+include error handling
+
+avoid fragile CSS selectors
+
+handle pagination if possible
+
+be easy to extend to more job boards
+
+Dependencies
+
+Use:
+
+requests
+beautifulsoup4
+playwright
+sqlite3
+
+Provide installation instructions:
+
+pip install requests beautifulsoup4 playwright
+
+and instructions to run:
+
+playwright install
+
+Goal
+
+The final program should allow me to run:
+
+python main.py
+
+and receive 10 fresh backend engineering jobs relevant to my stack without duplicates.
+
+The script should be robust enough to run daily.
+
+Important
+
+Focus on accuracy of job extraction and filtering.
+
+The program should favor precision over recall, meaning it is better to return fewer jobs that are highly relevant.
