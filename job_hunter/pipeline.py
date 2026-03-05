@@ -7,7 +7,6 @@ from .filters import is_relevant_job
 from .models import Job
 from .scoring import score_job
 from .storage import init_db, job_seen, mark_job_seen
-from .wellfound_scraper import scrape_wellfound_jobs
 from .yc_scraper import scrape_yc_jobs
 
 
@@ -32,7 +31,8 @@ def _remote_priority(job: Job) -> int:
 def collect_fresh_jobs(limit: int, dry_run: bool, db_path: str) -> List[Job]:
     init_db(db_path)
 
-    scraped_jobs = _safe_scrape("yc", scrape_yc_jobs) + _safe_scrape("wellfound", scrape_wellfound_jobs)
+    # Wellfound is temporarily disabled due to anti-bot blocking.
+    scraped_jobs = _safe_scrape("yc", scrape_yc_jobs)
     candidates: List[Job] = []
     urls_in_run: set[str] = set()
 

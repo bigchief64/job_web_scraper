@@ -23,9 +23,7 @@ BACKEND_SIGNALS = [
     "backend platform",
 ]
 
-HARD_REJECT_TERMS = [
-    "react",
-]
+HARD_REJECT_TERMS = []
 
 UI_REJECT_PATTERN = re.compile(r"\bui\b", re.IGNORECASE)
 FULL_STACK_PATTERN = re.compile(r"full[\s-]?stack", re.IGNORECASE)
