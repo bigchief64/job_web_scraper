@@ -60,10 +60,31 @@ REMOTE_FRIENDLY_PATTERNS = [
     re.compile(r"remote[\s-]?friendly", re.IGNORECASE),
 ]
 REMOTE_PATTERN = re.compile(r"\bremote\b", re.IGNORECASE)
-ONSITE_OR_HYBRID_PATTERNS = [
+HYBRID_PATTERNS = [
+    re.compile(r"\bhybrid\b", re.IGNORECASE),
+]
+ONSITE_PATTERNS = [
     re.compile(r"\bon[\s-]?site\b", re.IGNORECASE),
     re.compile(r"\bin[\s-]?office\b", re.IGNORECASE),
-    re.compile(r"\bhybrid\b", re.IGNORECASE),
+]
+CONFIRMED_REMOTE_LABELS = {"remote", "remote-friendly", "remote-us"}
+
+# New Orleans region aliases used by the strict location eligibility policy.
+NEW_ORLEANS_REGION_TERMS = [
+    "new orleans",
+    "metairie",
+    "kenner",
+    "gretna",
+    "harvey",
+    "marrero",
+    "westwego",
+    "chalmette",
+    "laplace",
+    "slidell",
+    "jefferson parish",
+    "orleans parish",
+    "st. tammany parish",
+    "saint tammany parish",
 ]
 
 
@@ -76,9 +97,30 @@ def classify_remote(job: Job) -> tuple[str, bool | None]:
         return "remote-friendly", True
     if REMOTE_PATTERN.search(remote_text):
         return "remote", True
-    if any(pattern.search(remote_text) for pattern in ONSITE_OR_HYBRID_PATTERNS):
+    if any(pattern.search(remote_text) for pattern in HYBRID_PATTERNS):
+        return "hybrid", False
+    if any(pattern.search(remote_text) for pattern in ONSITE_PATTERNS):
         return "onsite", False
     return "unknown", None
+
+
+def _is_new_orleans_region(job: Job) -> bool:
+    location_text = f"{job.location}\n{job.description}\n{job.title}".lower()
+    return any(term in location_text for term in NEW_ORLEANS_REGION_TERMS)
+
+
+def _passes_location_policy(job: Job) -> bool:
+    # Eligibility matrix:
+    # 1) Confirmed remote labels are always eligible.
+    # 2) Non-remote/hybrid roles must be explicitly in the New Orleans region.
+    # 3) Unknown remote status is rejected unless New Orleans-region local context is present.
+    if job.remote_label in CONFIRMED_REMOTE_LABELS and job.is_remote is True:
+        return True
+
+    if _is_new_orleans_region(job):
+        return True
+
+    return False
 
 
 def _is_backend_heavy(text: str) -> bool:
@@ -98,7 +140,7 @@ def is_relevant_job(job: Job) -> bool:
     job.remote_label = remote_label
     job.is_remote = remote_flag
 
-    if remote_flag is False:
+    if not _passes_location_policy(job):
         return False
 
     if not any(signal in text for signal in BACKEND_SIGNALS):
