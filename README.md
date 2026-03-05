@@ -32,6 +32,7 @@ Optional flags:
 - `--limit 10` number of jobs to print.
 - `--dry-run` do not mark results as seen.
 - `--db-path path/to/jobs_seen.db` custom SQLite location.
+  Default: `~/.job_hunter/jobs_seen.db`.
 
 ## Output Example
 

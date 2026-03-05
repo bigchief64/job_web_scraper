@@ -25,12 +25,6 @@ BACKEND_SIGNALS = [
 
 HARD_REJECT_TERMS = [
     "react",
-    "frontend",
-    "designer",
-    "mobile",
-    "product manager",
-    "ios",
-    "android",
 ]
 
 UI_REJECT_PATTERN = re.compile(r"\bui\b", re.IGNORECASE)
@@ -126,7 +120,17 @@ def _passes_location_policy(job: Job) -> bool:
 def _is_backend_heavy(text: str) -> bool:
     strong_backend_hits = sum(
         1
-        for marker in ("backend", "api", "apis", "microservice", "distributed", "event-driven", "aws", "sqs", "queue")
+        for marker in (
+            "backend",
+            "api",
+            "apis",
+            "microservice",
+            "distributed",
+            "event-driven",
+            "aws",
+            "sqs",
+            "queue",
+        )
         if marker in text
     )
     return strong_backend_hits >= 2

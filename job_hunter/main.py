@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 from typing import List
 
 from .models import Job
@@ -8,7 +9,7 @@ from .pipeline import collect_fresh_jobs
 
 
 DEFAULT_LIMIT = 10
-DEFAULT_DB_PATH = "jobs_seen.db"
+DEFAULT_DB_PATH = str(Path.home() / ".job_hunter" / "jobs_seen.db")
 
 
 def build_parser() -> argparse.ArgumentParser:
