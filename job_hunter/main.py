@@ -1,60 +1,53 @@
-from __future__ import annotations
+from .hn_fetch import get_who_is_hiring
+from .hn_jobs import fetch_comments
+from .filters import relevant, remote
+from .storage import init_db, seen, mark_seen
 
-import argparse
-from pathlib import Path
-from typing import List
-
-from .models import Job
-from .pipeline import collect_fresh_jobs
+LIMIT = 10
 
 
-DEFAULT_LIMIT = 10
-DEFAULT_DB_PATH = str(Path.home() / ".job_hunter" / "jobs_seen.db")
+def main():
 
+    init_db()
 
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Discover fresh backend jobs from YC and Wellfound")
-    parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help="Max fresh jobs to print (default: 10)")
-    parser.add_argument("--dry-run", action="store_true", help="Run without marking jobs as seen")
-    parser.add_argument("--db-path", default=DEFAULT_DB_PATH, help="SQLite path for seen job tracking")
-    return parser
+    story = get_who_is_hiring()
 
+    if not story:
+        print("Could not find HN hiring thread")
+        return
 
-def format_job(job: Job) -> str:
-    score = f"{job.score:.1f}"
-    source = "YC" if job.source == "yc" else "Wellfound" if job.source == "wellfound" else job.source
-    location = job.location
-    if job.remote_label == "unknown":
-        location = f"{location} (remote unknown)"
-    return (
-        f"Score: {score}\n"
-        f"Title: {job.title}\n"
-        f"Company: {job.company}\n"
-        f"Location: {location}\n"
-        f"Source: {source}\n"
-        f"URL: {job.url}\n"
-    )
+    comments = fetch_comments(story)
 
+    results = []
 
-def run(limit: int, dry_run: bool, db_path: str) -> List[Job]:
-    jobs = collect_fresh_jobs(limit=limit, dry_run=dry_run, db_path=db_path)
-    for job in jobs:
-        print(format_job(job))
-    if not jobs:
-        print("No fresh jobs found.")
-    return jobs
+    for job in comments:
 
+        if seen(job["id"]):
+            continue
 
-def main() -> int:
-    parser = build_parser()
-    args = parser.parse_args()
+        text = job["text"]
 
-    if args.limit <= 0:
-        parser.error("--limit must be positive")
+        if not relevant(text):
+            continue
 
-    run(limit=args.limit, dry_run=args.dry_run, db_path=args.db_path)
-    return 0
+        if not remote(text):
+            continue
+
+        results.append(job)
+
+        if len(results) >= LIMIT:
+            break
+
+    for job in results:
+
+        print()
+        print(job["url"])
+        print()
+        print(job["text"][:400])
+        print()
+
+        mark_seen(job["id"])
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
